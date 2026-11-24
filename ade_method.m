@@ -6,7 +6,7 @@ psi = zeros(size(u));
 
 dt = T/Nt;
 m = length(x);
-plot_m = min(find(x <= plot_limit, 1, 'last'), m - Nt);
+plot_m = find(x <= plot_limit, 1, 'last');
 tau = (0:Nt)*dt;
 u_history = zeros(Nt + 1, plot_m);
 u_history(1, :) = u(1:plot_m);

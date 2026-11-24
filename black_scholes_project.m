@@ -28,14 +28,12 @@ for q = 1:length(Nt_values)
     [~, target_index] = min(abs(x - S0));
     ade_price(q) = u(target_index);
     exact_error(q) = abs(ade_price(q) - exact_price);
-
-    if q == length(Nt_values)
-        x_ade = x;
-        u_ade = u;
-        tau = tau_q;
-        u_ade_history = history_q;
-    end
 end
+
+x_ade = x;
+u_ade = u;
+tau = tau_q;
+u_ade_history = history_q;
 
 order = [NaN, log2(exact_error(1:end-1)./exact_error(2:end))];
 results = table(Nt_values.', ade_price.', paper_price.', exact_error.', order.', ...
@@ -67,10 +65,12 @@ title('Space convergence')
 grid on
 
 %% Forward Euler stability comparison
+dt_euler = T/Nt_values(end);
+Nt_euler = 4;
+T_euler = Nt_euler*dt_euler;
 [x_euler, u_euler, tau_euler, ~] = ...
-    forward_euler(K, r, sigma, T, h, Smax, Nt_values(end), plot_limit);
-fprintf('Forward Euler stopped at tau = %.6f before T = %.1f because it became unstable.\n', ...
-    tau_euler(end), T)
+    forward_euler(K, r, sigma, T_euler, h, Smax, Nt_euler, plot_limit);
+fprintf('Forward Euler after %d steps at tau = %.6f.\n', Nt_euler, tau_euler(end))
 
 %% Compare with the exact solution
 show_ade = x_ade <= plot_limit;
