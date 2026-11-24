@@ -4,7 +4,7 @@
   "risk_tier": "method",
   "protocol_frozen_before_outcomes": false,
   "provenance": {
-    "code_commit": "populate after first commit",
+    "code_commit": "7a83d91113d5a0941fa9a61449e0a2ff6b652b96",
     "dirty_tree": false,
     "data_hashes": [
       "Wang et al. (2025) local source PDF sha256:b678436c6fdf60b8277843d8c8e6832168922d604199e98a8039bf7e60d88dc2"
