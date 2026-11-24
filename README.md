@@ -32,9 +32,12 @@ excluded from version control. The scripts use only base MATLAB functions.
   validation, and a stability stress test.
 - `tests/run_tests.m`: exact-oracle, reproduction, parity, refinement, and
   planted-fault checks.
-- `docs/PROJECT_SCOPE.md`: examination scope, work packages, and the 15-minute
-  presentation story.
-- `validation-plan.json`: frozen method-level verification protocol.
+- `docs/VALIDATION_LOG.md`: the recorded falsification-test correction.
+- `validation-plan.json`: method-level verification protocol and claim status.
+
+Course notes, presentation scope, results interpretation, and the contribution
+template live in the SF2527 section of the Obsidian vault. This repository owns
+the runnable MATLAB implementation and its technical validation artifacts.
 
 ## Scientific status
 
