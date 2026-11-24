@@ -12,9 +12,10 @@ S0 = 100;
 h = 0.05;
 Smax = 400;
 Nt = 1280;
+plot_limit = 160;
 
 %% Article method
-[x, u] = ade_method(K, r, sigma, T, h, Smax, Nt);
+[x, u, tau, u_history] = ade_method(K, r, sigma, T, h, Smax, Nt, plot_limit);
 
 [~, target_index] = min(abs(x - S0));
 numerical_price = u(target_index);
@@ -24,7 +25,7 @@ fprintf('Exact price:     %.6f\n', exact_price)
 
 %% Compare with the exact solution
 exact_profile = black_scholes_call(x, T, K, r, sigma);
-show = x <= 160;
+show = x <= plot_limit;
 
 figure;
 plot(x(show), exact_profile(show), 'k-', 'LineWidth', 1.5)
@@ -36,8 +37,19 @@ ylabel('Call option value')
 legend('Exact', 'ADE method', 'Location', 'northwest')
 grid on
 
+%% Numerical solution over asset price and time
+x_plot = x(1:size(u_history, 2));
+
+figure;
+mesh(x_plot(1:20:end), tau(1:16:end), u_history(1:16:end, 1:20:end))
+title('Numerical ADE solution')
+xlabel('Asset price')
+ylabel('Time to maturity')
+zlabel('Call option value')
+grid on
+
 %% Functions
-function [x, u] = ade_method(K, r, sigma, T, h, Smax, Nt)
+function [x, u, tau, u_history] = ade_method(K, r, sigma, T, h, Smax, Nt, plot_limit)
 x = 0:h:Smax;
 u = max(x - K, 0);
 phi = zeros(size(u));
@@ -45,6 +57,10 @@ psi = zeros(size(u));
 
 dt = T/Nt;
 m = length(x);
+plot_m = min(find(x <= plot_limit, 1, 'last'), m - Nt);
+tau = (0:Nt)*dt;
+u_history = zeros(Nt + 1, plot_m);
+u_history(1, :) = u(1:plot_m);
 
 for n = 1:Nt
     mnew = m - 1;
@@ -79,6 +95,7 @@ for n = 1:Nt
 
     psi(1) = 0;
     u(1:mnew) = (phi(1:mnew) + psi(1:mnew))/2; % equation (10)
+    u_history(n + 1, :) = u(1:plot_m);
     m = mnew;
 end
 
