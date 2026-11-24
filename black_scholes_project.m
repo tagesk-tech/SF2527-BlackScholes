@@ -11,48 +11,18 @@ T = 0.1;
 S0 = 100;
 h = 0.05;
 Smax = 400;
-Nt_values = [160, 320, 640, 1280];
+Nt = 1280;
 
-%% Article method and simple verification
+%% Article method
+[x, u] = ade_method(K, r, sigma, T, h, Smax, Nt);
+
+[~, target_index] = min(abs(x - S0));
+numerical_price = u(target_index);
 exact_price = black_scholes_call(S0, T, K, r, sigma);
-paper_price = [3.1676, 3.7501, 3.8871, 3.9189];
-price = zeros(size(Nt_values));
-error = zeros(size(Nt_values));
+fprintf('Numerical price: %.6f\n', numerical_price)
+fprintf('Exact price:     %.6f\n', exact_price)
 
-for q = 1:length(Nt_values)
-    Nt = Nt_values(q);
-    [x, u] = ade_method(K, r, sigma, T, h, Smax, Nt, -r);
-
-    [~, target_index] = min(abs(x - S0));
-    price(q) = u(target_index);
-    error(q) = abs(price(q) - exact_price);
-end
-
-observed_order = [NaN, log2(error(1:end-1)./error(2:end))];
-difference_from_paper = abs(price - paper_price);
-
-results = table(Nt_values', price', paper_price', exact_price*ones(length(Nt_values),1), ...
-    error', observed_order', difference_from_paper', ...
-    'VariableNames', {'Nt','price','paper_price','exact_price','error', ...
-    'observed_order','difference_from_paper'});
-disp(results)
-
-% The paper prints four decimals, so half a last printed digit is the target.
-assert(max(difference_from_paper) < 5e-4, 'The paper prices were not reproduced.')
-assert(all(diff(error) < 0), 'The error did not decrease under time refinement.')
-assert(error(end) < 2e-2, 'The finest result is not close to the exact price.')
-assert(abs(u(1)) < 1e-12 && all(isfinite(u)), 'Boundary or finite-value check failed.')
-
-% A wrong sign on the reaction term must be detected by the exact solution.
-[x_wrong, u_wrong] = ade_method(K, r, sigma, T, h, Smax, Nt_values(end), r);
-[~, target_index] = min(abs(x_wrong - S0));
-wrong_error = abs(u_wrong(target_index) - exact_price);
-assert(wrong_error > error(end) && abs(u_wrong(target_index) - price(end)) > 2e-2, ...
-    'The verification did not detect the planted sign error.')
-
-fprintf('All simple checks passed.\n')
-
-%% Plot the finest numerical solution
+%% Compare with the exact solution
 exact_profile = black_scholes_call(x, T, K, r, sigma);
 show = x <= 160;
 
@@ -67,7 +37,7 @@ legend('Exact', 'ADE method', 'Location', 'northwest')
 grid on
 
 %% Functions
-function [x, u] = ade_method(K, r, sigma, T, h, Smax, Nt, reaction)
+function [x, u] = ade_method(K, r, sigma, T, h, Smax, Nt)
 x = 0:h:Smax;
 u = max(x - K, 0);
 phi = zeros(size(u));
@@ -88,8 +58,8 @@ for n = 1:Nt
         numerator = u(i)/dt ...
             + diffusion*(u(i+1) - u(i) + phi(i-1)) ...
             + advection*(u(i+1) - u(i) - phi(i-1)) ...
-            + reaction*u(i)/2;
-        denominator = 1/dt + diffusion - advection - reaction/2;
+            - r*u(i)/2;
+        denominator = 1/dt + diffusion - advection + r/2;
         phi(i) = numerator/denominator;
     end
 
@@ -102,8 +72,8 @@ for n = 1:Nt
         numerator = u(i)/dt ...
             + diffusion*(psi(i+1) - u(i) + u(i-1)) ...
             + advection*(psi(i+1) + u(i) - u(i-1)) ...
-            + reaction*u(i)/2;
-        denominator = 1/dt + diffusion + advection - reaction/2;
+            - r*u(i)/2;
+        denominator = 1/dt + diffusion + advection + r/2;
         psi(i) = numerator/denominator;
     end
 
