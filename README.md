@@ -4,6 +4,30 @@ Reproducible MATLAB implementation and audit of Wang et al. (2025),
 "A second-order finite difference method for the Black--Scholes model
 without far-field boundary conditions."
 
+## Start here
+
+`black_scholes_project.m` is the small course-style version. It follows the
+same structure as the other SF2527 computer exercises: parameters first,
+direct loops, a results table, one figure, and local functions at the end.
+
+It implements the paper's European-call ADE method, equations (8)--(10), and
+performs four simple checks:
+
+- reproduction of the paper's printed prices;
+- comparison with the analytical Black--Scholes price;
+- decreasing error under time refinement;
+- rejection of a planted wrong sign in the reaction term.
+
+Run it from the repository root:
+
+```matlab
+black_scholes_project
+```
+
+The `src/`, `experiments/`, and `tests/` folders contain the earlier extended
+reference implementation. They are preserved for later comparison but are not
+needed for the first article-and-code walkthrough.
+
 The project tests the paper's two-sweep Saul'yev/ADE method on a grid that
 loses one rightmost point per time step. It keeps paper reproduction separate
 from independent verification: the paper's printed exact European-call value
