@@ -8,6 +8,7 @@ plot_m = min(find(x <= plot_limit, 1, 'last'), m - Nt);
 tau_all = (0:Nt)*dt;
 u_history = zeros(Nt + 1, plot_m);
 u_history(1, :) = u(1:plot_m);
+instability_limit = 1000;
 
 for n = 1:Nt
     mnew = m - 1;
@@ -24,8 +25,8 @@ for n = 1:Nt
     u_history(n + 1, :) = u(1:plot_m);
     m = mnew;
 
-    % Stop once the instability is visible instead of overflowing.
-    if any(~isfinite(u(1:plot_m))) || max(abs(u(1:plot_m))) > 1e3
+    largest_value = max(abs(u(1:plot_m)));
+    if largest_value > instability_limit
         break
     end
 end
